@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhiyou100.dao.SpeakerDao">
+
+	<!-- 返回全部内容 -->
+	<select id="listObject" resultType="speakerDO">
+		SELECT id ,name
+		,job
+		FROM
+		speaker
+		where status = 0;
+	</select>
+
+
+	<!-- 返回指定内容 -->
+	<select id="listObjectByQuery" resultType="speakerDO">
+		SELECT
+		id
+		,name
+		,job
+		,image_url
+		,`describe`
+		FROM
+		speaker
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item">
+					OR name LIKE
+					'%${item}%'
+				</foreach>
+			</if>
+			AND status = 0
+		</where>
+
+		<if test="sort !=null and order != null">
+			ORDER BY ${sort} ${order}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT ${offset},${limit};
+		</if>
+	</select>
+
+
+
+
+
+	<!-- 返回查询数量 -->
+	<select id="countObjectByQuery" resultType="int">
+		SELECT COUNT(*) FROM speaker
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					name LIKE '%${item}%'
+				</foreach>
+			</if>
+
+			AND status = 0
+		</where>
+	</select>
+
+
+
+
+	<!-- 添加 -->
+	<insert id="addObject">
+		INSERT INTO
+		speaker (name,job,image_url,`describe`)
+		VALUES
+		(#{name},#{job},#{imageUrl},#{describe})
+	</insert>
+
+
+	<select id="getObject" resultType="speakerDO">
+		SELECT id ,name
+		,job
+		,image_url
+		,`describe`
+		FROM
+		speaker
+		where
+		id=#{id};
+	</select>
+
+	<update id="updateSpeakerIdNull">
+		UPDATE
+		video
+		SET
+		speaker_id = null
+		<where>
+			speaker_id IN
+			<foreach collection="array" item="item" open="(" close=")"
+				separator=",">
+				${item}
+			</foreach>
+		</where>
+	</update>
+
+
+	<!-- 更新 -->
+	<update id="updateObject">
+		UPDATE
+		speaker
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+
+			<if test="job != null">
+				job = #{job},
+			</if>
+
+			<if test="imageUrl != null">
+				image_url = #{imageUrl},
+			</if>
+
+			<if test="describe != null">
+				`describe` = #{describe},
+			</if>
+
+			<if test="status != null">
+				status = #{status},
+			</if>
+		</set>
+		WHERE
+		id = #{id}
+	</update>
+
+	<!-- 删除 -->
+	<update id="removeObject">
+		UPDATE speaker SET
+		status = 1
+		WHERE id in
+		<foreach collection="array" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach>
+	</update>
+
+</mapper>

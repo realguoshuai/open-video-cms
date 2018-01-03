@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.VideoDao">
+
+		<resultMap type="videoDO" id="listObject">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="length" column="length" />
+		<result property="playCount" column="playCount" />
+		<result property="subjectName" column="subjectName" />
+		<result property="speakerName" column="speakerName" />
+		<result property="courseName" column="courseName" />
+		
+		<association property="course" javaType="courseDO">
+			<result property="name" column="courseName" />
+		</association>
+		<association property="speaker" javaType="speakerDO">
+			<result property="name" column="speakerName" />
+		</association>
+		<association property="subject" javaType="subjectDO">
+			<result property="name" column="subjectName" />
+		</association>
+	</resultMap>
+
+	<select id="listObject" resultMap="listObject">
+		SELECT
+		v.id id
+		, v.name name
+		, c.name courseName
+		, s.name speakerName
+		, a.name subjectName
+		, v.length
+		, v.play_count playCount
+		FROM
+		video
+		v LEFT JOIN
+		course c ON v.course_id =
+		c.id
+		LEFT JOIN speaker s ON
+		v.speaker_id =
+		s.id
+		LEFT JOIN subject a ON
+		c.subject_id = a.id
+		WHERE
+		v.status = 0
+	</select>
+
+	<select id="listObjectByQuery" resultMap="listObject">
+		SELECT
+		v.id id
+		, v.name name
+		, c.name courseName
+		, s.name speakerName
+		, a.name subjectName
+		, v.length
+		, v.play_count playCount
+		FROM
+		video
+		v LEFT JOIN
+		course c ON v.course_id =
+		c.id
+		LEFT JOIN speaker s ON
+		v.speaker_id =
+		s.id
+		LEFT JOIN subject a ON
+		c.subject_id = a.id
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					v.name LIKE '%${item}%'
+				</foreach>
+			</if>
+
+			<if test="speakerId != null and speakerId != 0">
+				AND v.speaker_id = #{speakerId}
+			</if>
+
+			<if test="courseId != null and courseId != 0">
+				AND v.course_id = #{courseId}
+			</if>
+
+			AND v.status = 0
+		</where>
+		<if test="sort != null and order != null">
+			ORDER BY ${sort} ${order}
+		</if>
+		LIMIT #{offset}, #{limit}
+	</select>
+
+
+	<select id="countObjectByQuery" resultType="int">
+		SELECT
+		count(*)
+		FROM
+		video
+		v LEFT JOIN
+		course c ON v.course_id =
+		c.id
+		LEFT
+		JOIN speaker s ON
+		v.speaker_id =
+		s.id
+		LEFT JOIN subject a ON
+		c.subject_id
+		= a.id
+		<where>
+			<if test="keywords != null">
+				<foreach collection="keywords" item="item" open="(" close=")"
+					separator="OR">
+					v.name LIKE '%${item}%'
+				</foreach>
+			</if>
+
+			<if test="speakerId != null and speakerId != 0">
+				AND v.speaker_id = #{speakerId}
+			</if>
+
+			<if test="courseId != null and courseId != 0">
+				AND v.course_id = #{courseId}
+			</if>
+
+			AND v.status = 0
+		</where>
+	</select>
+
+
+	<insert id="addObject">
+		INSERT ignore INTO video
+		(name,`describe`,length,play_count,cover_url,video_url,course_id,speaker_id)
+		VALUES
+		(#{name},#{describe},#{length},#{playCount},#{coverUrl},#{videoUrl},#{courseId},#{speakerId})
+	</insert>
+
+
+	<select id="getObject" resultType="videoDO">
+		SELECT
+		id
+		,name
+		,`describe`
+		,length
+		,play_count
+		,cover_url
+		,video_url
+		,course_id
+		,speaker_id
+		from
+		video
+		where
+		id=#{id};
+	</select>
+
+
+	<update id="updateObject">
+		UPDATE
+		video
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+
+			<if test="describe != null">
+				`describe` = #{describe},
+			</if>
+
+			<if test="length != null">
+				length = #{length},
+			</if>
+
+			<if test="playCount != null">
+				play_count = #{playCount},
+			</if>
+
+			<if test="coverUrl != null">
+				cover_url = #{coverUrl},
+			</if>
+
+			<if test="videoUrl != null">
+				video_url = #{videoUrl},
+			</if>
+
+			<if test="courseId != null">
+				course_id = #{courseId},
+			</if>
+
+			<if test="speakerId != null">
+				speaker_id = #{speakerId},
+			</if>
+
+			<if test="status != null">
+				status = #{status},
+			</if>
+		</set>
+		WHERE
+		id = #{id}
+	</update>
+
+	<update id="updateCourseIdNull">
+		update video set
+		course_id = null
+		<where>
+			course_id in
+			<foreach collection="array" item="item" open="(" close=")"
+				separator=",">
+				${item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="updateSpeakerIdNull">
+		update video set
+		speaker_id = null
+		<where>
+			speaker_id in
+			<foreach collection="array" item="item" open="(" close=")"
+				separator=",">
+				${item}
+			</foreach>
+		</where>
+	</update>
+
+
+	<update id="removeObject">
+		UPDATE video SET
+		status = 1
+		WHERE id in
+		<foreach collection="array" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

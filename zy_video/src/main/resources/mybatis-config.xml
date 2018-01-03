@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<!-- 开启 下划线命名 自动映射到 驼峰命名 -->
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		
+		<!-- 在控制台打印日志 -->
+		<setting name="logImpl" value="STDOUT_LOGGING"/>
+	</settings>
+</configuration>

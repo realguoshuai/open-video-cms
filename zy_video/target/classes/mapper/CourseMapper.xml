@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou100.dao.CourseDao">
+
+	<resultMap type="courseDO" id="listObjectByQuery">
+		<id property="id" column="id" />
+		<result property="name" column="course_name" />
+		<result property="describe" column="describe" />
+		<association property="subject" javaType="subjectDO">
+			<id property="id" column="subject_id" />
+			<result property="name" column="subject_name" />
+		</association>
+	</resultMap>
+	<select id="listObject" resultType="courseDO">
+		SELECT
+		id
+		, name
+		FROM
+		course
+		WHERE
+		status = 0
+	</select>
+
+
+	<select id="listObjectByQuery" resultMap="listObjectByQuery">
+		SELECT
+		c.id
+		, c.name course_name
+		, c.describe
+		, s.id subject_id
+		, s.name
+		subject_name
+		FROM
+		course
+		c LEFT JOIN subject s ON c.subject_id =
+		s.id
+		<where>
+			<if test="subjectId != null and subjectId !=0 ">
+				c.subject_id = #{subjectId}
+			</if>
+			AND c.status = 0
+		</where>
+		LIMIT ${offset}, ${limit}
+	</select>
+
+	<select id="countObjectByQuery" resultType="int">
+		select count(*)
+		FROM
+		course
+		c LEFT JOIN subject s ON
+		c.subject_id =
+		s.id
+		<where>
+			<if test="subjectId != null and subjectId !=0 ">
+				c.subject_id = #{subjectId}
+			</if>
+			AND c.status = 0
+		</where>
+	</select>
+
+	<select id="getObject" resultType="courseDO">
+		select
+		c.id
+		,c.name
+		,c.`describe`
+		,c.subject_id
+		,s.name
+		from
+		course c , subject s
+		where
+		c.subject_id=s.id and
+		c.status =0
+		and c.id=#{id}
+	</select>
+
+	<insert id="addObject">
+		INSERT ignore INTO
+		course (name,`describe`,subject_id)
+		VALUES
+		(#{name},#{describe},#{subjectId})
+	</insert>
+
+	<update id="updateObject">
+		UPDATE
+		course
+		<set>
+			<if test="name != null">
+				name = #{name},
+			</if>
+
+			<if test="describe != null">
+				`describe` = #{describe},
+			</if>
+
+			<if test="subjectId != null">
+				subject_id = #{subjectId},
+			</if>
+
+			<if test="status != null">
+				status = #{status},
+			</if>
+		</set>
+		WHERE
+		id = #{id}
+	</update>
+	<update id="updateSubjectId">
+		UPDATE
+		course
+		SET
+		subject_id = null
+		<where>
+			subject_id IN
+			<foreach collection="array" item="item" open="(" close=")"
+				separator=",">
+				${item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="updateCourseIdNull">
+		UPDATE
+		video
+		SET
+		course_id = null
+		<where>
+			course_id IN
+			<foreach collection="array" item="item" open="(" close=")"
+				separator=",">
+				${item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="removeObject">
+		UPDATE course SET
+		status = 1
+		WHERE id in
+		<foreach collection="array" item="item" open="(" close=")"
+			separator=",">
+			#{item}
+		</foreach>
+	</update>
+
+</mapper>
